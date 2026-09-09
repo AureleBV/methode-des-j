@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Méthode des J · Planning de révisions</title>
+<meta name="description" content="Planning de révisions automatique avec la méthode des J : tu notes tes cours, l'appli place les révisions.">
+<meta name="theme-color" content="#5B5BD6">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Révisions">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Écran de verrouillage -->
+<div id="lock" class="lock" hidden>
+  <div class="lock-card">
+    <div class="lock-logo"><img src="icons/icon-192.png" alt=""></div>
+    <h1>Méthode des J</h1>
+    <p class="muted">Entre ton code pour accéder à ton planning.</p>
+    <form id="lock-form" autocomplete="off">
+      <input id="lock-input" type="password" placeholder="Code d'accès" autocomplete="off" autofocus>
+      <label class="checkbox"><input type="checkbox" id="lock-remember" checked> <span>Rester connecté sur cet appareil</span></label>
+      <button class="btn primary block" type="submit">Déverrouiller</button>
+      <p id="lock-error" class="error" hidden>Code incorrect.</p>
+    </form>
+  </div>
+</div>
+
+<div id="app" class="app" hidden>
+  <aside class="sidebar">
+    <a class="brand" href="#/today"><img src="icons/icon-192.png" alt=""><span>Méthode des J</span></a>
+    <nav class="sidenav" id="sidenav"></nav>
+    <div class="sidebar-foot">
+      <button class="btn ghost small" id="btn-lock" title="Verrouiller">🔒 Verrouiller</button>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <a class="brand" href="#/today"><img src="icons/icon-192.png" alt=""><span>Méthode des J</span></a>
+    <button class="icon-btn" id="btn-lock-m" title="Verrouiller">🔒</button>
+  </header>
+
+  <main id="view" class="view"></main>
+
+  <nav class="bottomnav" id="bottomnav"></nav>
+</div>
+
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

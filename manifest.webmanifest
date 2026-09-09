@@ -1,0 +1,21 @@
+{
+  "name": "Méthode des J · Révisions",
+  "short_name": "Révisions",
+  "description": "Planning de révisions automatique selon la méthode des J (répétition espacée).",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F4F5FA",
+  "theme_color": "#5B5BD6",
+  "lang": "fr",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Aujourd'hui", "url": "./#/today", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Nouveau cours", "url": "./#/cours?new=1", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
