@@ -1,0 +1,121 @@
+@import 'tailwindcss';
+
+/* Palette : chaleureuse, pas médicale. Tokens en variables CSS pour le mode sombre. */
+:root {
+  --bg: #f7f6f1;
+  --surface: #ffffff;
+  --surface-2: #f0efe8;
+  --text: #1d1c19;
+  --muted: #6d6b64;
+  --border: #e6e4dc;
+  --primary: #1f7a5c;
+  --primary-soft: #e0f0e8;
+  --accent: #e9a93a;
+  --accent-soft: #fbf0d6;
+  --coral: #d9705a;
+  --coral-soft: #f9e3dd;
+  --blue: #4a7fb5;
+  --blue-soft: #e2ecf6;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15161a;
+    --surface: #1f2126;
+    --surface-2: #272a30;
+    --text: #ecebe6;
+    --muted: #a09e97;
+    --border: #33363d;
+    --primary: #4fb38c;
+    --primary-soft: #1d3a2f;
+    --accent: #f0b64d;
+    --accent-soft: #3d3220;
+    --coral: #ee8a72;
+    --coral-soft: #3f2822;
+    --blue: #7aa8d8;
+    --blue-soft: #1f2d3d;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-line: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-coral: var(--coral);
+  --color-coral-soft: var(--coral-soft);
+  --color-blue: var(--blue);
+  --color-blue-soft: var(--blue-soft);
+  --font-sans: ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --radius-xl: 1.1rem;
+  --radius-2xl: 1.4rem;
+}
+
+html {
+  background: var(--bg);
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+input,
+select,
+textarea,
+button {
+  font: inherit;
+  color: inherit;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+.safe-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.sheet-in {
+  animation: sheet-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.fade-in {
+  animation: fade-in 0.18s ease-out;
+}

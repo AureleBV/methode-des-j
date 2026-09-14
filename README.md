@@ -20,3 +20,9 @@ npx http-server . -p 8090 -c-1
 ```
 
 Les icônes sont générées par `node gen-icons.js`.
+
+---
+
+## NutriPlate (dossier `nutriplate/`)
+
+Application de nutrition et de perte de poids progressive (React + TypeScript + Dexie, PWA hors-ligne). Voir [`nutriplate/README.md`](nutriplate/README.md).
