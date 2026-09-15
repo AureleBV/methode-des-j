@@ -49,6 +49,17 @@ npm run typecheck
 npm run build      # dist/ (PWA)
 ```
 
+## Installer sur le téléphone (PWA)
+
+Le workflow `.github/workflows/pages.yml` déploie le repo sur GitHub Pages à chaque push sur `main` :
+`https://<utilisateur>.github.io/methode-des-j/nutriplate/`. À activer une fois dans le repo : Settings → Pages → Source : **GitHub Actions**.
+
+Ensuite, ouvrir l'URL sur le téléphone :
+- **Android (Chrome)** : menu ⋮ → « Installer l'application » (ou « Ajouter à l'écran d'accueil »).
+- **iPhone (Safari)** : bouton Partager → « Sur l'écran d'accueil ».
+
+L'app fonctionne ensuite hors-ligne, en plein écran, et les données restent sur l'appareil. Le scan de code-barres nécessite Chrome sur Android (API BarcodeDetector) ; ailleurs, la saisie manuelle du code est proposée.
+
 ## Santé
 
 NutriPlate n'est pas un dispositif médical. Les objectifs sont des estimations. En cas de doute, de pathologie, de grossesse ou de signes de trouble du comportement alimentaire, consulte un professionnel de santé.
