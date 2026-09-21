@@ -64,6 +64,26 @@ export function useWeightLogs() {
   return useLiveQuery(() => db.weightLogs.orderBy('date').toArray(), []) ?? [];
 }
 
+export function useVariants(foodId: string | undefined) {
+  return useLiveQuery(() => (foodId ? db.foodVariants.where('foodId').equals(foodId).toArray() : Promise.resolve([] as import('@/domain/types').FoodVariant[])), [foodId]) ?? [];
+}
+
+export function useAllVariants() {
+  return useLiveQuery(() => db.foodVariants.toArray(), []) ?? [];
+}
+
+export function usePriceRecords(foodId: string | undefined) {
+  return useLiveQuery(() => (foodId ? db.priceRecords.where('foodId').equals(foodId).toArray() : Promise.resolve([] as import('@/domain/types').PriceRecord[])), [foodId]) ?? [];
+}
+
+export function useAllPriceRecords() {
+  return useLiveQuery(() => db.priceRecords.toArray(), []) ?? [];
+}
+
+export function useCustomPrograms() {
+  return useLiveQuery(() => db.programs.orderBy('createdAt').reverse().toArray(), []) ?? [];
+}
+
 export function useSavedMeals() {
   return useLiveQuery(() => db.meals.orderBy('createdAt').reverse().toArray(), []) ?? [];
 }

@@ -8,7 +8,9 @@ import type { FoodCategory, ShoppingListItem } from '@/domain/types';
 import { addDays, today } from '@/domain/weight';
 import { addShoppingItem, createShoppingListFromPlan, deleteShoppingItem, deleteShoppingList, toggleShoppingItem } from '@/lib/actions';
 import { mondayOf } from '@/lib/format';
-import { useFavorites, useFoodMap, useRecipeViews } from '@/lib/hooks';
+import { useAllPriceRecords, useAllVariants, useFavorites, useFoodMap, useRecipeViews } from '@/lib/hooks';
+import { estimateCost, formatEur, packsNeeded, preferredVariant, summarizeRecords } from '@/domain/prices';
+import { Link } from 'react-router-dom';
 import { Button, Card, EmptyState, Input, PageHeader, Select, toast } from '@/components/ui';
 
 export function ShoppingPage() {
@@ -21,6 +23,8 @@ export function ShoppingPage() {
   const foodMap = useFoodMap();
   const { views, byId } = useRecipeViews();
   const favs = useFavorites();
+  const variants = useAllVariants();
+  const priceRecords = useAllPriceRecords();
   const [newName, setNewName] = useState('');
   const [newCat, setNewCat] = useState<FoodCategory>('other');
   const list = lists.find((l) => l.id === listId);
@@ -46,10 +50,23 @@ export function ShoppingPage() {
   }
 
   const done = items.filter((i) => i.checked).length;
+  /** Produit habituel + coût estimé par article (prix moyen/kg relevé). */
+  const enriched = useMemo(() => {
+    const m = new Map<string, { productName?: string; packs?: number | null; cost: number | null }>();
+    for (const it of items) {
+      if (!it.foodId) continue;
+      const v = preferredVariant(it.foodId, variants);
+      const sum = summarizeRecords(priceRecords.filter((r) => r.foodId === it.foodId), v?.packGrams);
+      m.set(it.id, { productName: v ? [v.brand, v.name].filter(Boolean).join(' · ') : undefined, packs: packsNeeded(it.grams, v, foodMap.get(it.foodId)), cost: estimateCost(it.grams, sum?.avgPerKg) });
+    }
+    return m;
+  }, [items, variants, priceRecords, foodMap]);
+  const totalCost = [...enriched.values()].reduce((s, e) => s + (e.cost ?? 0), 0);
+  const priced = [...enriched.values()].filter((e) => e.cost !== null).length;
 
   return (
     <div className="fade-in">
-      <PageHeader title="Courses" back={() => nav(-1)} subtitle={list ? `${done} / ${items.length} cochés` : undefined} />
+      <PageHeader title="Courses" back={() => nav(-1)} subtitle={list ? `${done} / ${items.length} cochés${priced ? ` · ≈ ${formatEur(totalCost)} (${priced} article${priced > 1 ? 's' : ''} avec prix)` : ''}` : undefined} right={<Link to="/courses/magasins" className="rounded-full bg-surface-2 px-3 py-2 text-sm font-semibold">📍 Où acheter</Link>} />
       <div className="flex gap-2">
         <Button size="sm" variant="secondary" onClick={fromWeek}>📅 Depuis la semaine</Button>
         <Button size="sm" variant="secondary" onClick={fromFavorites}>♥ Depuis les favoris</Button>
@@ -76,8 +93,14 @@ export function ShoppingPage() {
                 {g.items.map((it) => (
                   <li key={it.id} className="flex items-center gap-3 py-1.5">
                     <input type="checkbox" checked={it.checked} onChange={(e) => toggleShoppingItem(it.id, e.target.checked)} className="h-5 w-5 accent-[var(--primary)]" aria-label={it.name} />
-                    <span className={`flex-1 text-sm ${it.checked ? 'text-muted line-through' : ''}`}>{it.name}</span>
-                    <span className="text-xs text-muted">{formatShoppingQty(it.grams, it.foodId ? foodMap.get(it.foodId) : undefined)}</span>
+                    <span className={`min-w-0 flex-1 text-sm ${it.checked ? 'text-muted line-through' : ''}`}>
+                      <span className="block truncate">{it.name}</span>
+                      {enriched.get(it.id)?.productName && <span className="block truncate text-[11px] text-muted">🏷️ {enriched.get(it.id)!.productName}{enriched.get(it.id)!.packs ? ` × ${enriched.get(it.id)!.packs}` : ''}</span>}
+                    </span>
+                    <span className="text-right text-xs text-muted">
+                      {formatShoppingQty(it.grams, it.foodId ? foodMap.get(it.foodId) : undefined)}
+                      {enriched.get(it.id)?.cost !== null && enriched.get(it.id)?.cost !== undefined && <span className="block">≈ {formatEur(enriched.get(it.id)!.cost!)}</span>}
+                    </span>
                     <button type="button" onClick={() => deleteShoppingItem(it.id)} className="text-muted" aria-label="Retirer">✕</button>
                   </li>
                 ))}

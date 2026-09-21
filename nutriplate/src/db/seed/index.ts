@@ -2,7 +2,7 @@ import { db, type NutriDB } from '@/db';
 import { SEED_FOODS } from './foods';
 import { SEED_INGREDIENTS, SEED_RECIPES } from './recipes';
 
-export const SEED_VERSION = 1;
+export const SEED_VERSION = 2;
 
 /**
  * Insère/actualise les données de départ. Les aliments et recettes créés

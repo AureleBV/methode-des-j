@@ -2,7 +2,8 @@ import { db, uid } from '@/db';
 import { PROGRAMS } from '@/db/seed/programs';
 import { macrosForGrams, sumMacros } from '@/domain/nutrition';
 import { aggregateShopping, generatePlan, type PlanInput, type RecipeView } from '@/domain/planner';
-import type { Food, Macros, MealLog, MealSlot, PlanEntry, PreferenceLevel, Recipe, RecipeIngredient, UserProfile, WorkoutType } from '@/domain/types';
+import type { CustomProgram, Food, FoodVariant, Macros, MealLog, MealSlot, PlanEntry, PreferenceLevel, PriceRecord, Recipe, RecipeIngredient, UserProfile, WorkoutType } from '@/domain/types';
+import type { Program } from '@/db/seed/programs';
 import { today } from '@/domain/weight';
 
 /** Mutations de la base : toutes les écritures passent par ici. */
@@ -180,8 +181,18 @@ export async function deleteShoppingList(id: string) {
   });
 }
 
+/** Programme intégré ou créé par l'utilisateur. */
+export async function resolveProgram(programId: string | null | undefined): Promise<Program | undefined> {
+  if (!programId) return undefined;
+  const builtin = PROGRAMS.find((p) => p.id === programId);
+  if (builtin) return builtin;
+  const custom = await db.programs.get(programId);
+  if (!custom) return undefined;
+  return { id: custom.id, name: custom.name, type: custom.type, emoji: custom.emoji, level: 'débutant', durationMinutes: custom.durationMinutes, description: custom.description ?? '', exercises: custom.exercises };
+}
+
 export async function startWorkout(programId: string | null, type: WorkoutType, date = today()): Promise<string> {
-  const program = programId ? PROGRAMS.find((p) => p.id === programId) : undefined;
+  const program = await resolveProgram(programId);
   const id = uid();
   await db.transaction('rw', [db.workouts, db.workoutExercises], async () => {
     await db.workouts.add({ id, date, type, name: program?.name ?? { gym: 'Séance salle', home: 'Séance maison', walk: 'Marche', cardio: 'Cardio' }[type], programId: program?.id, completed: false, createdAt: Date.now() });
@@ -212,7 +223,7 @@ export async function deleteWorkout(id: string) {
 
 /** Export/import JSON de toutes les données utilisateur (sauvegarde). */
 export async function exportAll(): Promise<string> {
-  const tables = ['profile', 'foods', 'recipes', 'recipeIngredients', 'meals', 'mealLogs', 'weightLogs', 'dayLogs', 'workouts', 'workoutExercises', 'favorites', 'shoppingLists', 'shoppingListItems', 'preferences', 'planEntries'] as const;
+  const tables = ['profile', 'foods', 'recipes', 'recipeIngredients', 'meals', 'mealLogs', 'weightLogs', 'dayLogs', 'workouts', 'workoutExercises', 'favorites', 'shoppingLists', 'shoppingListItems', 'preferences', 'planEntries', 'foodVariants', 'priceRecords', 'programs'] as const;
   const out: Record<string, unknown[]> = {};
   for (const t of tables) {
     const rows = await db.table(t).toArray();
@@ -235,3 +246,57 @@ export async function importAll(json: string): Promise<void> {
 }
 
 export const totalsOf = (logs: MealLog[]) => sumMacros(logs.map((l) => l.macros));
+
+/* ————— Phase 4 : variantes habituelles, produits & prix, programmes, profils ————— */
+
+export async function setUsualVariant(group: string, foodId: string | null): Promise<void> {
+  const p = await db.profile.get('me');
+  if (!p) return;
+  const usual = { ...(p.usualVariants ?? {}) };
+  if (foodId) usual[group] = foodId;
+  else delete usual[group];
+  await db.profile.update('me', { usualVariants: usual, updatedAt: Date.now() });
+}
+
+export async function addVariant(input: Omit<FoodVariant, 'id' | 'createdAt'>): Promise<FoodVariant> {
+  const v: FoodVariant = { ...input, id: uid(), createdAt: Date.now() };
+  await db.transaction('rw', db.foodVariants, async () => {
+    if (v.preferred) await db.foodVariants.where('foodId').equals(v.foodId).modify({ preferred: false });
+    await db.foodVariants.add(v);
+  });
+  return v;
+}
+
+export async function setPreferredVariant(variant: FoodVariant): Promise<void> {
+  await db.transaction('rw', db.foodVariants, async () => {
+    await db.foodVariants.where('foodId').equals(variant.foodId).modify({ preferred: false });
+    await db.foodVariants.update(variant.id, { preferred: true });
+  });
+}
+
+export async function deleteVariant(id: string): Promise<void> {
+  await db.transaction('rw', [db.foodVariants, db.priceRecords], async () => {
+    await db.foodVariants.delete(id);
+    await db.priceRecords.where('variantId').equals(id).delete();
+  });
+}
+
+export async function addPriceRecord(input: Omit<PriceRecord, 'id' | 'source' | 'date'> & { date?: string }): Promise<void> {
+  await db.priceRecords.add({ ...input, id: uid(), date: input.date ?? today(), source: 'user' });
+}
+
+export const deletePriceRecord = (id: string) => db.priceRecords.delete(id);
+
+export async function saveCustomProgram(input: Omit<CustomProgram, 'id' | 'createdAt'> & { id?: string }): Promise<string> {
+  const id = input.id ?? uid();
+  await db.programs.put({ ...input, id, createdAt: Date.now() });
+  return id;
+}
+
+export const deleteCustomProgram = (id: string) => db.programs.delete(id);
+
+/** Supprime toutes les données d'un profil (base IndexedDB dédiée). */
+export async function deleteProfileDatabase(dbName: string): Promise<void> {
+  const { default: Dexie } = await import('dexie');
+  await Dexie.delete(dbName);
+}

@@ -1,6 +1,10 @@
 import Dexie, { type EntityTable } from 'dexie';
+import { activeDbName } from './profiles';
 import type {
+  CustomProgram,
   DayLog,
+  FoodVariant,
+  PriceRecord,
   Favorite,
   Food,
   Meal,
@@ -52,9 +56,13 @@ export class NutriDB extends Dexie {
   planEntries!: EntityTable<PlanEntry, 'id'>;
   offCache!: EntityTable<OffCacheEntry, 'key'>;
   meta!: EntityTable<AppMeta, 'key'>;
+  foodVariants!: EntityTable<FoodVariant, 'id'>;
+  priceRecords!: EntityTable<PriceRecord, 'id'>;
+  programs!: EntityTable<CustomProgram, 'id'>;
 
   constructor(name = 'nutriplate') {
     super(name);
+    // v1 : schéma initial. Les versions suivantes ne font qu'ajouter des tables.
     this.version(1).stores({
       profile: 'id',
       foods: 'id, name, category, source, barcode',
@@ -74,10 +82,17 @@ export class NutriDB extends Dexie {
       offCache: 'key, fetchedAt',
       meta: 'key',
     });
+    // v2 : variantes de produits, prix, programmes perso, index sur les groupes de variantes.
+    this.version(2).stores({
+      foods: 'id, name, category, source, barcode, variantGroup',
+      foodVariants: 'id, foodId, barcode, preferred',
+      priceRecords: 'id, foodId, variantId, date',
+      programs: 'id, type, createdAt',
+    });
   }
 }
 
-export const db = new NutriDB();
+export const db = new NutriDB(activeDbName());
 
 export function uid(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();

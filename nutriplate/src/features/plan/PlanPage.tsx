@@ -34,7 +34,7 @@ export function PlanPage() {
 
   async function generate() {
     if (!profile || !targets) return;
-    const n = await replaceWeekPlan({ startDate: weekStart, days: 7, kcalTarget: targets.kcal, eatsBreakfast: profile.eatsBreakfast, views, ingredients, foodsById: foodMap, prefs, diet: profile.diet, equipment: profile.equipment, favoriteIds: favs.recipeIds });
+    const n = await replaceWeekPlan({ startDate: weekStart, days: 7, kcalTarget: targets.kcal, eatsBreakfast: profile.eatsBreakfast, slots: profile.slots, mealTimes: profile.mealTimes, views, ingredients, foodsById: foodMap, prefs, diet: profile.diet, equipment: profile.equipment, favoriteIds: favs.recipeIds });
     toast(n ? 'Semaine générée' : 'Aucune recette compatible avec ton matériel');
   }
 
@@ -81,7 +81,7 @@ export function PlanPage() {
           const e = dayEntries.find((x) => x.slot === slot);
           const v = e ? byId.get(e.recipeId) : undefined;
           if (!e || !v) {
-            if (slot === 'breakfast' && profile && !profile.eatsBreakfast) return null;
+            if (profile && !(profile.slots ?? (profile.eatsBreakfast ? SLOTS : SLOTS.filter((x) => x !== 'breakfast'))).includes(slot)) return null;
             return (
               <button key={slot} type="button" onClick={() => setAddingSlot(slot)} className="flex w-full items-center gap-3 rounded-2xl border border-dashed border-line px-3 py-3 text-left text-sm text-muted">
                 <span className="w-12 text-xs font-semibold">{SLOT_TIMES[slot]}</span>+ {SLOT_LABELS[slot]}

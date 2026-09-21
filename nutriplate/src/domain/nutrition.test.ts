@@ -22,6 +22,15 @@ describe('nutrition', () => {
     expect(goalDelta('gain', 2500)).toBe(200);
   });
 
+  it('le rythme et les protéines/kg sont personnalisables mais bornés', () => {
+    expect(goalDelta('lose', 2500, false, 'douce')).toBe(-250);
+    expect(goalDelta('lose', 2500, false, 'soutenue')).toBe(-500);
+    expect(goalDelta('lose', 2500, true, 'soutenue')).toBe(-200);
+    const t = computeTargets({ sex: 'male', age: 22, heightCm: 178, weightKg: 82, activity: 'light', sessionsPerWeek: 3, goal: 'lose', proteinPerKg: 2.2 });
+    expect(t.protein).toBe(180);
+    expect(computeTargets({ sex: 'male', age: 22, heightCm: 178, weightKg: 82, activity: 'light', sessionsPerWeek: 3, goal: 'lose', proteinPerKg: 5 }).protein).toBe(197);
+  });
+
   it('respecte le plancher calorique', () => {
     const t = computeTargets({ sex: 'female', age: 40, heightCm: 155, weightKg: 48, activity: 'sedentary', sessionsPerWeek: 0, goal: 'lose', kcalAdjustment: -500 });
     expect(t.kcal).toBeGreaterThanOrEqual(kcalFloor('female', t.bmr));

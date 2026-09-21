@@ -49,6 +49,51 @@ export interface Food {
   barcode?: string;
   /** Quantité par défaut proposée à l'ajout (g). */
   defaultGrams?: number;
+  /** Groupe de variantes (ex: 'ground_beef' pour 5 / 10 / 15 / 20 % MG). */
+  variantGroup?: string;
+  /** Libellé court de la variante ('5 % MG', 'complet', '0 %'). */
+  variantLabel?: string;
+  /** Rang dans le groupe : 0 = version la plus légère. */
+  variantRank?: number;
+}
+
+/** Produit précis (marque) rattaché à un aliment générique. */
+export interface FoodVariant {
+  id: string;
+  foodId: string;
+  name: string;
+  brand?: string;
+  barcode?: string;
+  /** Valeurs propres au produit si connues (sinon celles de l'aliment générique). */
+  per100?: Macros;
+  packGrams?: number;
+  /** Produit habituel : utilisé par défaut dans la liste de courses. */
+  preferred: boolean;
+  createdAt: number;
+}
+
+/** Prix observé (saisi par l'utilisateur ou issu d'Open Prices). */
+export interface PriceRecord {
+  id: string;
+  variantId?: string;
+  foodId: string;
+  priceEur: number;
+  packGrams?: number;
+  store?: string;
+  date: string;
+  source: 'user' | 'openprices';
+}
+
+/** Programme d'entraînement créé par l'utilisateur. */
+export interface CustomProgram {
+  id: string;
+  name: string;
+  type: WorkoutType;
+  emoji: string;
+  durationMinutes: number;
+  description?: string;
+  exercises: { name: string; sets: number; reps: string; note?: string }[];
+  createdAt: number;
 }
 
 export type PreferenceLevel = 'love' | 'ok' | 'hate' | 'allergy';
@@ -223,7 +268,23 @@ export interface UserProfile {
   onboarded: boolean;
   createdAt: number;
   updatedAt: number;
+  /** —— Personnalisation (phase 4) —— */
+  avatar?: string;
+  accent?: AccentTheme;
+  /** Rythme : douce = déficit réduit, soutenue = déficit haut de la fourchette. */
+  pace?: GoalPace;
+  /** Protéines par kg de poids de référence (défaut : 1,6 à 1,8). */
+  proteinPerKg?: number;
+  /** Heures habituelles des repas (planning, rappels). */
+  mealTimes?: Partial<Record<MealSlot, string>>;
+  /** Variante habituelle par groupe (ex: ground_beef -> ground_beef_10). */
+  usualVariants?: Record<string, string>;
+  /** Créneaux effectivement pris (permet de retirer la collation, etc.). */
+  slots?: MealSlot[];
 }
+
+export type AccentTheme = 'green' | 'blue' | 'coral' | 'violet' | 'amber';
+export type GoalPace = 'douce' | 'moderee' | 'soutenue';
 
 export interface Targets {
   bmr: number;
