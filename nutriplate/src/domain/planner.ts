@@ -122,10 +122,13 @@ export function similarRecipes(target: RecipeView, all: RecipeView[], max = 5): 
 }
 
 /** Part de l'objectif journalier allouée à chaque créneau. */
-export function slotShares(eatsBreakfast: boolean): Record<Exclude<MealSlot, 'other'>, number> {
-  return eatsBreakfast
-    ? { breakfast: 0.22, lunch: 0.33, snack: 0.12, dinner: 0.33 }
-    : { breakfast: 0, lunch: 0.4, snack: 0.15, dinner: 0.45 };
+export function slotShares(eatsBreakfast: boolean, slots?: MealSlot[]): Record<Exclude<MealSlot, 'other'>, number> {
+  const base: Record<Exclude<MealSlot, 'other'>, number> = { breakfast: 0.22, lunch: 0.33, snack: 0.12, dinner: 0.33 };
+  const active = new Set<MealSlot>(slots ?? (eatsBreakfast ? ['breakfast', 'lunch', 'snack', 'dinner'] : ['lunch', 'snack', 'dinner']));
+  const total = (Object.keys(base) as Exclude<MealSlot, 'other'>[]).filter((s) => active.has(s)).reduce((sum, s) => sum + base[s], 0);
+  const out = { breakfast: 0, lunch: 0, snack: 0, dinner: 0 };
+  for (const s of Object.keys(base) as Exclude<MealSlot, 'other'>[]) out[s] = active.has(s) && total > 0 ? Math.round((base[s] / total) * 100) / 100 : 0;
+  return out;
 }
 
 export const SLOT_LABELS: Record<MealSlot, string> = { breakfast: 'Petit-déjeuner', lunch: 'Déjeuner', snack: 'Collation', dinner: 'Dîner', other: 'Autre' };
@@ -136,6 +139,8 @@ export interface PlanInput {
   days: number;
   kcalTarget: number;
   eatsBreakfast: boolean;
+  slots?: MealSlot[];
+  mealTimes?: Partial<Record<MealSlot, string>>;
   views: RecipeView[];
   ingredients: RecipeIngredient[];
   foodsById: Map<string, Food>;
@@ -155,7 +160,7 @@ export interface PlanInput {
  */
 export function generatePlan(input: PlanInput): Omit<PlanEntry, 'id'>[] {
   const rnd = input.random ?? Math.random;
-  const shares = slotShares(input.eatsBreakfast);
+  const shares = slotShares(input.eatsBreakfast, input.slots);
   const has = new Set(input.equipment);
   const usable = input.views.filter((v) => {
     const c = recipeCompatibility(v.recipe, input.ingredients, input.foodsById, input.prefs, input.diet);
@@ -187,7 +192,7 @@ export function generatePlan(input: PlanInput): Omit<PlanEntry, 'id'>[] {
       if (share === 0) continue;
       const v = pick(slot, input.kcalTarget * share);
       if (!v) continue;
-      entries.push({ date, slot, time: SLOT_TIMES[slot], recipeId: v.recipe.id, servings: 1 });
+      entries.push({ date, slot, time: input.mealTimes?.[slot] ?? SLOT_TIMES[slot], recipeId: v.recipe.id, servings: 1 });
       recent.push(v.recipe.id);
       if (recent.length > 6) recent.shift();
     }

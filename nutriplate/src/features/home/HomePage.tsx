@@ -46,9 +46,10 @@ export function HomePage() {
   }, [views, prefs, profile, targets, totals.kcal, totals.protein]);
 
   if (!profile || !targets) return null;
-  const mealsLeft = ['breakfast', 'lunch', 'snack', 'dinner'].filter((s) => (s !== 'breakfast' || profile.eatsBreakfast) && !slotsDone.has(s as never)).length;
+  const mySlots = profile.slots ?? (['breakfast', 'lunch', 'snack', 'dinner'] as const).filter((s) => s !== 'breakfast' || profile.eatsBreakfast);
+  const mealsLeft = mySlots.filter((s) => !slotsDone.has(s)).length;
   const remaining = targets.kcal - totals.kcal;
-  const hello = profile.firstName ? `Salut ${profile.firstName}` : 'Salut';
+  const hello = `${profile.avatar ? profile.avatar + ' ' : ''}${profile.firstName ? `Salut ${profile.firstName}` : 'Salut'}`;
 
   return (
     <div className="fade-in">

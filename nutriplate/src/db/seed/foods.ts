@@ -28,10 +28,13 @@ export const SEED_FOODS: Food[] = [
   f('chicken_thigh', 'Haut de cuisse de poulet sans peau (cru)', 'meat', [125, 19, 0, 5.5], [A, 'proteine'], [P_('1 haut de cuisse', 110)], 150),
   f('turkey_escalope', 'Escalope de dinde (crue)', 'meat', [110, 23, 0, 1.5], [A, 'proteine'], [P_('1 escalope', 130)], 150),
   f('ground_beef_5', 'Steak haché 5 % (cru)', 'meat', [125, 21.5, 0, 5], [A, 'proteine'], [P_('1 steak', 125)], 150),
+  f('ground_beef_10', 'Steak haché 10 % (cru)', 'meat', [170, 19.5, 0, 10], [A, 'proteine'], [P_('1 steak', 125)], 150),
   f('ground_beef_15', 'Steak haché 15 % (cru)', 'meat', [210, 18.5, 0, 15], [A], [P_('1 steak', 125)], 125),
+  f('ground_beef_20', 'Steak haché 20 % (cru)', 'meat', [250, 17, 0, 20], [A], [P_('1 steak', 125)], 125),
   f('beef_steak', 'Steak de bœuf (rumsteck, cru)', 'meat', [130, 22, 0, 4.5], [A, 'proteine'], [P_('1 steak', 150)], 150),
   f('pork_tenderloin', 'Filet mignon de porc (cru)', 'meat', [115, 21, 0, 3], [A, 'pork', 'proteine'], [], 150),
-  f('ham', 'Jambon blanc découenné', 'meat', [110, 20, 1, 3], [A, 'pork', 'proteine'], [P_('1 tranche', 40)], 80),
+  f('ham', 'Jambon blanc découenné dégraissé', 'meat', [110, 20, 1, 3], [A, 'pork', 'proteine'], [P_('1 tranche', 40)], 80),
+  f('ham_std', 'Jambon blanc standard (avec couenne)', 'meat', [130, 19, 1, 6], [A, 'pork'], [P_('1 tranche', 45)], 90),
   f('bacon_lardons', 'Lardons fumés', 'meat', [290, 14, 0.5, 26], [A, 'pork'], [], 50),
   f('chicken_nuggets', 'Nuggets de poulet (surgelés)', 'meat', [250, 14, 17, 13], [A, 'gluten', 'plaisir'], [P_('1 nugget', 20)], 150),
   f('cordon_bleu', 'Cordon bleu', 'meat', [230, 15, 15, 12], [A, 'pork', 'gluten', 'plaisir'], [P_('1 pièce', 100)], 100),
@@ -54,8 +57,10 @@ export const SEED_FOODS: Food[] = [
   // ——— Féculents ———
   f('rice_raw', 'Riz blanc (cru)', 'starch', [350, 7, 78, 0.7, 1.5], [], [P_('1 verre', 80)], 80),
   f('rice_cooked', 'Riz blanc cuit', 'starch', [130, 2.7, 28, 0.3, 0.4], ['volume'], [], 200),
+  f('rice_brown_cooked', 'Riz complet cuit', 'starch', [110, 2.5, 23, 0.9, 1.8], ['volume'], [], 200),
   f('rice_microwave', 'Riz micro-ondes (sachet 2 min)', 'starch', [150, 3, 30, 1.5, 0.5], ['rapide'], [P_('1 sachet', 250)], 250),
   f('pasta_raw', 'Pâtes (crues)', 'starch', [355, 12.5, 72, 1.5, 3], ['gluten'], [], 100),
+  f('pasta_whole_raw', 'Pâtes complètes (crues)', 'starch', [340, 13, 62, 2.5, 8], ['gluten'], [], 100),
   f('pasta_cooked', 'Pâtes cuites', 'starch', [150, 5.5, 29, 0.9, 2], ['gluten'], [], 250),
   f('potato', 'Pommes de terre (crues)', 'starch', [80, 2, 17, 0.1, 2], ['volume'], [P_('1 pomme de terre moyenne', 150)], 300),
   f('sweet_potato', 'Patate douce (crue)', 'starch', [85, 1.6, 20, 0.1, 3], ['volume'], [], 250),
@@ -110,8 +115,13 @@ export const SEED_FOODS: Food[] = [
   f('fromage_blanc_0', 'Fromage blanc 0 %', 'dairy', [45, 8, 4, 0.1], [A, 'lactose', 'proteine', 'volume'], [P_('1 pot', 100)], 200),
   f('greek_yogurt_0', 'Yaourt grec 0 %', 'dairy', [55, 10, 3.5, 0.2], [A, 'lactose', 'proteine'], [P_('1 pot', 150)], 150),
   f('yogurt', 'Yaourt nature', 'dairy', [60, 4, 5, 3], [A, 'lactose'], [P_('1 pot', 125)], 125),
+  f('greek_yogurt_full', 'Yaourt grec entier', 'dairy', [130, 5.5, 4.5, 10], [A, 'lactose'], [P_('1 pot', 150)], 150),
+  f('fromage_blanc_3', 'Fromage blanc 3 %', 'dairy', [70, 8, 4, 3], [A, 'lactose', 'proteine'], [P_('1 pot', 100)], 200),
+  f('fromage_blanc_8', 'Fromage blanc 8 %', 'dairy', [100, 7, 4, 8], [A, 'lactose'], [P_('1 pot', 100)], 200),
   f('cottage', 'Cottage cheese', 'dairy', [100, 12, 3, 4], [A, 'lactose', 'proteine'], [], 150),
+  f('milk_skim', 'Lait écrémé', 'dairy', [35, 3.4, 5, 0.1], [A, 'lactose'], [P_('1 verre', 200), P_('1 bol', 250)], 250),
   f('milk_semi', 'Lait demi-écrémé', 'dairy', [47, 3.3, 4.8, 1.6], [A, 'lactose'], [P_('1 verre', 200), P_('1 bol', 250)], 250),
+  f('milk_whole', 'Lait entier', 'dairy', [64, 3.2, 4.7, 3.6], [A, 'lactose'], [P_('1 verre', 200), P_('1 bol', 250)], 250),
   f('parmesan', 'Parmesan', 'dairy', [400, 33, 0, 30], [A, 'lactose', 'plaisir'], [P_('1 c. à soupe', 10)], 15),
   f('gruyere', 'Gruyère / emmental râpé', 'dairy', [400, 28, 0.5, 32], [A, 'lactose', 'plaisir'], [P_('1 poignée', 30)], 30),
   f('mozzarella', 'Mozzarella', 'dairy', [250, 18, 1, 19], [A, 'lactose'], [P_('1 boule', 125)], 60),
@@ -119,6 +129,7 @@ export const SEED_FOODS: Food[] = [
   f('cheddar_slice', 'Cheddar (tranche)', 'dairy', [350, 25, 1, 28], [A, 'lactose', 'plaisir'], [P_('1 tranche', 20)], 20),
   f('goat_cheese', 'Chèvre (bûche)', 'dairy', [290, 20, 1, 23], [A, 'lactose'], [], 40),
   f('cream_light', 'Crème légère 15 %', 'dairy', [160, 3, 4, 15], [A, 'lactose'], [P_('1 c. à soupe', 15)], 50),
+  f('cream_full', 'Crème entière 30 %', 'dairy', [300, 2, 3, 30], [A, 'lactose'], [P_('1 c. à soupe', 15)], 50),
   f('whey', 'Whey protéine (poudre)', 'dairy', [380, 78, 6, 5], [A, 'lactose', 'proteine'], [P_('1 dose', 30)], 30),
   f('protein_pudding', 'Dessert lacté protéiné', 'dairy', [90, 10, 8, 2], [A, 'lactose', 'proteine'], [P_('1 pot', 200)], 200),
 
@@ -170,5 +181,54 @@ export const SEED_FOODS: Food[] = [
   f('beer', 'Bière 5 %', 'drink', [43, 0.5, 3, 0], [], [P_('1 demi', 250), P_('1 pinte', 500)], 250),
   f('coffee', 'Café noir', 'drink', [2, 0.2, 0, 0], [], [P_('1 tasse', 100)], 100),
 ];
+
+/**
+ * Groupes de variantes : même aliment, versions plus ou moins grasses/complètes.
+ * rank 0 = la plus légère. L'app propose la plus légère par défaut mais
+ * l'utilisateur choisit précisément ce qu'il prend (et peut fixer son habituel).
+ */
+const VARIANTS: Record<string, { group: string; label: string; rank: number }> = {
+  ground_beef_5: { group: 'ground_beef', label: '5 % MG', rank: 0 },
+  ground_beef_10: { group: 'ground_beef', label: '10 % MG', rank: 1 },
+  ground_beef_15: { group: 'ground_beef', label: '15 % MG', rank: 2 },
+  ground_beef_20: { group: 'ground_beef', label: '20 % MG', rank: 3 },
+  chicken_breast: { group: 'chicken', label: 'blanc', rank: 0 },
+  chicken_thigh: { group: 'chicken', label: 'haut de cuisse', rank: 1 },
+  ham: { group: 'ham', label: 'dégraissé', rank: 0 },
+  ham_std: { group: 'ham', label: 'standard', rank: 1 },
+  rice_brown_cooked: { group: 'rice_cooked', label: 'complet', rank: 0 },
+  rice_cooked: { group: 'rice_cooked', label: 'blanc', rank: 1 },
+  pasta_whole_raw: { group: 'pasta', label: 'complètes', rank: 0 },
+  pasta_raw: { group: 'pasta', label: 'blanches', rank: 1 },
+  wholemeal_bread: { group: 'bread', label: 'complet', rank: 0 },
+  bread: { group: 'bread', label: 'blanc', rank: 1 },
+  greek_yogurt_0: { group: 'yogurt', label: 'grec 0 %', rank: 0 },
+  yogurt: { group: 'yogurt', label: 'nature', rank: 1 },
+  greek_yogurt_full: { group: 'yogurt', label: 'grec entier', rank: 2 },
+  fromage_blanc_0: { group: 'fromage_blanc', label: '0 %', rank: 0 },
+  fromage_blanc_3: { group: 'fromage_blanc', label: '3 %', rank: 1 },
+  fromage_blanc_8: { group: 'fromage_blanc', label: '8 %', rank: 2 },
+  milk_skim: { group: 'milk', label: 'écrémé', rank: 0 },
+  milk_semi: { group: 'milk', label: 'demi-écrémé', rank: 1 },
+  milk_whole: { group: 'milk', label: 'entier', rank: 2 },
+  cream_light: { group: 'cream', label: '15 %', rank: 0 },
+  cream_full: { group: 'cream', label: '30 %', rank: 1 },
+  mayo_light: { group: 'mayo', label: 'allégée', rank: 0 },
+  mayo: { group: 'mayo', label: 'classique', rank: 1 },
+  soda_zero: { group: 'soda', label: 'zéro', rank: 0 },
+  soda: { group: 'soda', label: 'sucré', rank: 1 },
+  potato: { group: 'fries', label: 'maison (pommes de terre)', rank: 0 },
+  frozen_fries: { group: 'fries', label: 'surgelées', rank: 1 },
+  dark_chocolate: { group: 'chocolate', label: 'noir 70 %', rank: 0 },
+  milk_chocolate: { group: 'chocolate', label: 'au lait', rank: 1 },
+};
+for (const food of SEED_FOODS) {
+  const v = VARIANTS[food.id];
+  if (v) {
+    food.variantGroup = v.group;
+    food.variantLabel = v.label;
+    food.variantRank = v.rank;
+  }
+}
 
 export const SEED_FOOD_IDS = new Set(SEED_FOODS.map((x) => x.id));

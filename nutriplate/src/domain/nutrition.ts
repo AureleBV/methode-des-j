@@ -1,4 +1,4 @@
-import type { ActivityLevel, Goal, Macros, Sex, Targets, UserProfile } from './types';
+import type { ActivityLevel, Goal, GoalPace, Macros, Sex, Targets, UserProfile } from './types';
 
 /**
  * Calculs énergétiques. Toutes les valeurs sont des ESTIMATIONS
@@ -21,6 +21,12 @@ export const ACTIVITY_LABELS: Record<ActivityLevel, string> = {
   moderate: 'Modéré (actif la journée)',
   active: 'Actif (métier physique)',
   very_active: 'Très actif (physique + sport intense)',
+};
+
+export const PACE_LABELS: Record<GoalPace, { label: string; hint: string }> = {
+  douce: { label: 'Douce', hint: '≈ -200 à -350 kcal · perte lente, faim minimale' },
+  moderee: { label: 'Modérée', hint: '≈ -250 à -550 kcal · le bon compromis' },
+  soutenue: { label: 'Soutenue', hint: '≈ -400 à -650 kcal · plus rapide, demande de la rigueur' },
 };
 
 export const GOAL_LABELS: Record<Goal, string> = {
@@ -62,13 +68,16 @@ export function kcalFloor(sex: Sex, bmrValue: number): number {
  * En mode "douceur" (signaux de rapport compliqué à la nourriture), on
  * plafonne le déficit à 200 kcal.
  */
-export function goalDelta(goal: Goal, tdeeValue: number, gentleMode = false): number {
+export function goalDelta(goal: Goal, tdeeValue: number, gentleMode = false, pace: GoalPace = 'moderee'): number {
   const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
   let delta = 0;
   switch (goal) {
-    case 'lose':
-      delta = -clamp(Math.round(tdeeValue * 0.15), 250, 550);
+    case 'lose': {
+      // Rythme choisi par l'utilisateur, toujours dans une fourchette raisonnable.
+      const [pct, lo, hi] = pace === 'douce' ? [0.1, 200, 350] : pace === 'soutenue' ? [0.2, 400, 650] : [0.15, 250, 550];
+      delta = -clamp(Math.round(tdeeValue * pct), lo, hi);
       break;
+    }
     case 'recomp':
       delta = -clamp(Math.round(tdeeValue * 0.08), 150, 300);
       break;
@@ -105,20 +114,22 @@ export interface TargetInput {
   goal: Goal;
   kcalAdjustment?: number;
   gentleMode?: boolean;
+  pace?: GoalPace;
+  proteinPerKg?: number;
 }
 
 /** Calcule l'ensemble des objectifs (kcal + macros). */
 export function computeTargets(input: TargetInput): Targets {
   const b = bmr(input.sex, input.weightKg, input.heightCm, input.age);
   const t = tdee(b, input.activity, input.sessionsPerWeek);
-  const delta = goalDelta(input.goal, t, input.gentleMode);
+  const delta = goalDelta(input.goal, t, input.gentleMode, input.pace);
   const floor = kcalFloor(input.sex, b);
   let kcal = t + delta + (input.kcalAdjustment ?? 0);
   if (kcal < floor) kcal = floor;
   kcal = Math.round(kcal / 10) * 10;
 
   const refWeight = proteinReferenceWeight(input.weightKg, input.heightCm);
-  const proteinPerKg = input.goal === 'maintain' ? 1.6 : 1.8;
+  const proteinPerKg = Math.min(2.4, Math.max(1.2, input.proteinPerKg ?? (input.goal === 'maintain' ? 1.6 : 1.8)));
   const protein = Math.round(refWeight * proteinPerKg);
 
   // Lipides : ~28 % des kcal, jamais sous 0,7 g/kg (hormones, satiété).
@@ -139,6 +150,8 @@ export function targetsForProfile(p: UserProfile): Targets {
     goal: p.goal,
     kcalAdjustment: p.kcalAdjustment,
     gentleMode: p.gentleMode,
+    pace: p.pace,
+    proteinPerKg: p.proteinPerKg,
   });
 }
 

@@ -9,14 +9,21 @@ import { lookupBarcode, OFF_ERROR_LABELS, searchProducts } from '@/services/open
 import { Button, Chip, ChipRow, EmptyState, Field, Input, MacroPills, NumberInput, Segmented, Select, Sheet, Spinner, Stepper, toast } from '@/components/ui';
 import { SLOT_LABELS } from '@/domain/planner';
 import { BarcodeScanner } from './BarcodeScanner';
+import { DictationSheet } from './DictationSheet';
+import { PhotoSheet } from './PhotoSheet';
+import { ProductsSheet } from './ProductsSheet';
+import { lighterTip, usualVariant, variantsOf } from '@/domain/variants';
+import { setUsualVariant } from '@/lib/actions';
+import { isDictationSupported } from '@/services/speech';
 
-type Tab = 'search' | 'favorites' | 'meals' | 'recipes' | 'custom';
+type Tab = 'search' | 'favorites' | 'meals' | 'recipes' | 'photo' | 'custom';
 
 export function AddFoodSheet({ date, slot, onClose }: { date: string; slot: MealSlot; onClose: () => void }) {
   const [tab, setTab] = useState<Tab>('search');
   const [q, setQ] = useState('');
   const [selected, setSelected] = useState<Food | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [dictating, setDictating] = useState(false);
   const foods = useFoods();
   const prefs = usePrefIndex();
   const profile = useProfile();
@@ -56,17 +63,20 @@ export function AddFoodSheet({ date, slot, onClose }: { date: string; slot: Meal
   return (
     <Sheet open onClose={onClose} title={`Ajouter · ${SLOT_LABELS[slot]}`} full>
       {selected ? (
-        <QuantityPicker food={selected} onBack={() => setSelected(null)} isFav={favs.foodIds.has(selected.id)} onConfirm={async (grams) => { await logFood({ date, slot, food: selected, grams }); toast(`${selected.name} ajouté`); onClose(); }} />
+        <QuantityPicker key={selected.id} food={selected} onBack={() => setSelected(null)} isFav={favs.foodIds.has(selected.id)} onConfirm={async (food, grams) => { await logFood({ date, slot, food, grams }); toast(`${food.name} ajouté`); onClose(); }} />
       ) : (
         <div className="space-y-3">
-          <Segmented value={tab} onChange={setTab} options={[{ value: 'search', label: '🔍' }, { value: 'favorites', label: '♥' }, { value: 'meals', label: '💾' }, { value: 'recipes', label: '🍽️' }, { value: 'custom', label: '＋' }]} />
+          <Segmented value={tab} onChange={setTab} options={[{ value: 'search', label: '🔍' }, { value: 'favorites', label: '♥' }, { value: 'meals', label: '💾' }, { value: 'recipes', label: '🍽️' }, { value: 'photo', label: '📷' }, { value: 'custom', label: '＋' }]} />
 
           {tab === 'search' && (
             <>
               <div className="flex gap-2">
                 <Input autoFocus type="search" placeholder="Poulet, skyr, pâtes…" value={q} onChange={(e) => setQ(e.target.value)} />
-                <Button variant="secondary" onClick={() => setScanning(true)} aria-label="Scanner un code-barres">
-                  📷
+                <Button variant="secondary" onClick={() => setScanning(true)} aria-label="Scanner un code-barres" title="Code-barres">
+                  ▤
+                </Button>
+                <Button variant="secondary" onClick={() => setDictating(true)} aria-label="Dicter un repas" title={isDictationSupported() ? 'Dicter' : 'Dicter (saisie texte si non supporté)'}>
+                  🎤
                 </Button>
               </div>
               {!q && (
@@ -133,10 +143,13 @@ export function AddFoodSheet({ date, slot, onClose }: { date: string; slot: Meal
             </div>
           )}
 
+          {tab === 'photo' && <PhotoSheet date={date} slot={slot} onClose={() => setTab('search')} onDone={onClose} />}
+
           {tab === 'custom' && <CustomFoodForm onCreated={(f) => setSelected(f)} />}
         </div>
       )}
       {scanning && <BarcodeScanner onDetect={onBarcode} onClose={() => setScanning(false)} />}
+      {dictating && <DictationSheet date={date} slot={slot} onClose={() => setDictating(false)} onDone={onClose} />}
     </Sheet>
   );
 }
@@ -165,8 +178,16 @@ function FoodList({ foods, onPick, excluded }: { foods: Food[]; onPick: (f: Food
   );
 }
 
-function QuantityPicker({ food, onBack, onConfirm, isFav }: { food: Food; onBack: () => void; onConfirm: (grams: number) => void; isFav: boolean }) {
-  const [grams, setGrams] = useState(food.defaultGrams ?? 100);
+function QuantityPicker({ food: initial, onBack, onConfirm, isFav }: { food: Food; onBack: () => void; onConfirm: (food: Food, grams: number) => void; isFav: boolean }) {
+  const foods = useFoods();
+  const profile = useProfile();
+  // Variante habituelle (ex: steak 10 %) présélectionnée si définie, sinon l'aliment cliqué.
+  const [food, setFood] = useState<Food>(() => usualVariant(initial, foods, profile));
+  const [grams, setGrams] = useState(initial.defaultGrams ?? 100);
+  const [products, setProducts] = useState(false);
+  const variants = useMemo(() => variantsOf(food, foods), [food, foods]);
+  const tip = useMemo(() => lighterTip(food, foods, grams), [food, foods, grams]);
+  const isUsual = !!food.variantGroup && profile?.usualVariants?.[food.variantGroup] === food.id;
   const m = macrosForGrams(food.per100, grams);
   const quick = [...(food.portions ?? []).map((p) => ({ label: p.label, value: p.grams })), { label: '50 g', value: 50 }, { label: '100 g', value: 100 }, { label: '150 g', value: 150 }, { label: '200 g', value: 200 }, { label: '300 g', value: 300 }];
   return (
@@ -182,13 +203,39 @@ function QuantityPicker({ food, onBack, onConfirm, isFav }: { food: Food; onBack
           {isFav ? '♥' : '♡'}
         </button>
       </div>
+      {variants.length > 1 && (
+        <div>
+          <div className="mb-1 flex items-center justify-between">
+            <p className="text-sm font-semibold">Tu prends laquelle ?</p>
+            <button type="button" onClick={async () => { await setUsualVariant(food.variantGroup!, isUsual ? null : food.id); toast(isUsual ? 'Habituel retiré' : 'Défini comme habituel'); }} className={`rounded-full px-2.5 py-1 text-xs font-semibold ${isUsual ? 'bg-primary text-white' : 'bg-surface-2'}`}>
+              {isUsual ? 'Mon habituel ✓' : 'Mon habituel'}
+            </button>
+          </div>
+          <ChipRow>
+            {variants.map((v) => (
+              <Chip key={v.id} active={v.id === food.id} onClick={() => setFood(v)}>
+                {v.variantLabel} · {v.per100.kcal} kcal
+              </Chip>
+            ))}
+          </ChipRow>
+        </div>
+      )}
       <Stepper value={grams} onChange={setGrams} step={10} min={0} suffix={food.category === 'drink' ? 'ml' : 'g'} quick={quick} />
       <div className="rounded-xl bg-surface-2 p-3">
         <MacroPills {...m} />
       </div>
-      <Button block size="lg" onClick={() => onConfirm(grams)}>
-        Ajouter · {m.kcal} kcal
-      </Button>
+      {tip && (
+        <p className="text-xs text-muted">
+          💡 Version plus légère dispo : <button type="button" className="font-semibold text-primary underline" onClick={() => setFood(tip.food)}>{tip.food.name}</button> (−{tip.kcalSaved} kcal pour {grams} g). Aucune obligation : note ce que tu manges vraiment.
+        </p>
+      )}
+      <div className="flex gap-2">
+        <Button variant="secondary" onClick={() => setProducts(true)}>🏷️ Produits & prix</Button>
+        <Button block size="lg" onClick={() => onConfirm(food, grams)}>
+          Ajouter · {m.kcal} kcal
+        </Button>
+      </div>
+      {products && <ProductsSheet food={food} onClose={() => setProducts(false)} />}
     </div>
   );
 }

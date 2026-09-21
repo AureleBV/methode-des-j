@@ -11,6 +11,7 @@ import { Button, Card, Chip, ChipRow, IconButton, MacroPills, Note, PageHeader, 
 import { AddToJournalSheet } from '@/features/journal/AddToJournalSheet';
 import { DIFFICULTY_LABELS, EQUIPMENT_LABELS, RecipeCard, RecipeThumb } from './RecipeCard';
 import { OIL_NOTE } from '@/db/seed/airfryer';
+import { CookingMode } from './CookingMode';
 
 interface IngState {
   foodId: string;
@@ -32,6 +33,7 @@ export function RecipePage() {
   const [subFor, setSubFor] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [oil, setOil] = useState<number | null>(null);
+  const [cooking, setCooking] = useState(false);
 
   const current = useMemo(() => {
     if (!view) return null;
@@ -149,7 +151,7 @@ export function RecipePage() {
         </Card>
       )}
 
-      <SectionTitle>Préparation</SectionTitle>
+      <SectionTitle action={<button type="button" onClick={() => setCooking(true)} className="text-sm font-semibold text-primary">🔊 Mode cuisine</button>}>Préparation</SectionTitle>
       <ol className="space-y-2">
         {r.instructions.map((s, i) => (
           <li key={i} className="flex gap-3 rounded-xl bg-surface px-3 py-2 text-sm border border-line">
@@ -203,6 +205,7 @@ export function RecipePage() {
         />
       )}
 
+      {cooking && <CookingMode view={view} onClose={() => setCooking(false)} />}
       <SubstituteSheet ingId={subFor} view={view} foods={foods} prefsIdx={prefs} diet={profile.diet} onClose={() => setSubFor(null)} onPick={(ingId, food, grams) => { replace(ingId, food, grams); setSubFor(null); }} onRemove={(ingId) => { remove(ingId); setSubFor(null); }} />
     </div>
   );

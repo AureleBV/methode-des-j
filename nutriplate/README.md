@@ -20,9 +20,20 @@ Application de nutrition et de perte de poids **progressive**, pensée pour les 
 - **Progrès** : poids du jour, moyenne 7 jours, 30 jours, depuis le début, graphique avec moyenne mobile, détection de plateau (checklist avant tout ajustement), proposition d'ajustement prudente (±100 kcal).
 - Export / import JSON, mode sombre automatique.
 
+### Phase 4 (personnalisation et services)
+
+- **Profils multiples** sur un même appareil (chacun sa base, ses goûts, ses objectifs), avatar, couleur d'accent, rythme de perte (douce / modérée / soutenue), protéines par kg, créneaux et heures de repas.
+- **Variantes d'aliments** : steak haché 5 / 10 / 15 / 20 %, lait écrémé / demi / entier, riz et pâtes blancs / complets, fromage blanc 0 / 3 / 8 %… L'app propose la version la plus légère mais tu choisis précisément ce que tu prends et peux fixer ton « habituel ».
+- **Produits & prix** : marque, format, code-barres (Open Food Facts), prix relevés par magasin, prix moyen au kilo, moyenne communautaire via [Open Prices](https://prices.openfoodfacts.org). Liste de courses avec produit habituel, nombre de packs et budget estimé.
+- **Où acheter** : commerces alimentaires autour de toi via OpenStreetMap / Overpass (sans clé), carte Leaflet, itinéraire dans l'app de cartes du téléphone.
+- **Voix** : dicter un repas (« 150 g de poulet, 200 g de riz et une banane »), lecture des recettes en mode cuisine, annonces du chrono. Web Speech API du navigateur, aucun serveur NutriPlate.
+- **Analyse photo** : modèle MobileNet dans le navigateur (gratuit, aucune image envoyée) ou, au choix, Gemini avec sa propre clé (offre gratuite Google, photos envoyées à Google). Dans les deux cas tu confirmes et ajustes.
+- **Sport** : 18 programmes (Full body, Push/Pull/Legs, Upper/Lower, maison, HIIT avec chrono, abdos, mobilité, course débutant, vélo, natation…), bibliothèque de 50 exercices, création de programmes personnels.
+- **Confidentialité** : page dédiée. Aucun compte, aucun cookie, aucun traceur ; les services externes ne reçoivent que le strict nécessaire, uniquement à l'usage.
+
 ## Stack
 
-Vite 8 · React 19 · TypeScript strict · Tailwind CSS 4 · Dexie (IndexedDB) · react-router · Vitest · ESLint · vite-plugin-pwa.
+Vite 8 · React 19 · TypeScript strict · Tailwind CSS 4 · Dexie (IndexedDB) · react-router · Leaflet (OpenStreetMap) · TensorFlow.js (chargé à la demande) · Vitest · ESLint · vite-plugin-pwa.
 
 ## Architecture
 
@@ -30,7 +41,7 @@ Vite 8 · React 19 · TypeScript strict · Tailwind CSS 4 · Dexie (IndexedDB) �
 src/
   domain/      calculs purs, testés (nutrition, satiété, préférences/substitutions, poids/plateau, planner)
   db/          schéma Dexie + seeds (aliments, recettes, collations, presets Air Fryer, programmes)
-  services/    Open Food Facts (isolé : timeout, cache 7 j, erreurs typées)
+  services/    Open Food Facts, Open Prices, Overpass (OSM), voix (Web Speech), vision (MobileNet local / Gemini) — isolés, avec cache et erreurs typées
   lib/         hooks de lecture réactive, mutations (actions), formatage
   components/  UI réutilisable (boutons, sheet, chips, anneaux de progression…)
   features/    écrans : onboarding, home, meals, journal, plan, sport, progress, profile

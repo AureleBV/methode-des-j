@@ -6,6 +6,8 @@ import type { WorkoutExercise, WorkoutSet } from '@/domain/types';
 import { finishWorkout, updateExercise } from '@/lib/actions';
 import { Button, Card, Field, NumberInput, PageHeader, toast } from '@/components/ui';
 import { dateLabel } from '@/lib/format';
+import { IntervalTimer } from './IntervalTimer';
+import { PROGRAMS } from '@/db/seed/programs';
 
 export function WorkoutPage() {
   const { id } = useParams();
@@ -23,11 +25,13 @@ export function WorkoutPage() {
 
   if (!workout) return null;
   const readOnly = workout.completed;
+  const program = workout.programId ? PROGRAMS.find((p) => p.id === workout.programId) : undefined;
 
   return (
     <div className="fade-in">
       <PageHeader title={workout.name} subtitle={dateLabel(workout.date)} back={() => nav('/sport')} />
       <div className="space-y-3">
+        {program?.intervals && !readOnly && <IntervalTimer rounds={program.intervals.rounds} workSec={program.intervals.workSec} restSec={program.intervals.restSec} exercises={program.exercises.filter((e) => !/échauffement|retour au calme|marche/i.test(e.name) || program.type !== 'home').map((e) => e.name)} />}
         {exercises.map((ex) => (
           <ExerciseCard key={ex.id} ex={ex} prev={previous.find((p) => p.name === ex.name)} readOnly={readOnly} />
         ))}

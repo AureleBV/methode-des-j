@@ -38,6 +38,18 @@
   }
 }
 
+/* Accent choisi dans le profil (data-accent sur <html>). */
+:root[data-accent='blue'] { --primary: #2f6fb3; --primary-soft: #e0eaf7; }
+:root[data-accent='coral'] { --primary: #c9583f; --primary-soft: #fbe4de; }
+:root[data-accent='violet'] { --primary: #6c5bd4; --primary-soft: #e9e5fa; }
+:root[data-accent='amber'] { --primary: #b8760f; --primary-soft: #fbedd2; }
+@media (prefers-color-scheme: dark) {
+  :root[data-accent='blue'] { --primary: #7aa8d8; --primary-soft: #1f2d3d; }
+  :root[data-accent='coral'] { --primary: #ee8a72; --primary-soft: #3f2822; }
+  :root[data-accent='violet'] { --primary: #a79aef; --primary-soft: #2a2544; }
+  :root[data-accent='amber'] { --primary: #f0b64d; --primary-soft: #3d3220; }
+}
+
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
